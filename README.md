@@ -111,6 +111,8 @@ Getestet wird unter anderem:
 * `GET /rest/{id}` setzt einen `ETag`-Header
 * `POST /rest` kann bei aktivierter Authentifizierung geschützt werden
 
+Zusätzlich gibt es optionale PostgreSQL-Integrationstests. Diese verwenden die echte Datenbankverbindung und laufen nur, wenn der Build-Tag `integration` gesetzt wird.
+
 ## Ausführen
 
 ### Voraussetzungen
@@ -153,6 +155,8 @@ go run ./cmd/server
 
 ### Qualitätssicherung
 
+Normale Tests:
+
 ```powershell
 gofmt -l cmd internal
 go vet ./...
@@ -160,6 +164,13 @@ go test ./...
 ```
 
 Diese Befehle werden auch im GitHub-Actions-Workflow ausgeführt.
+
+Echte PostgreSQL-Integrationstests:
+
+```powershell
+$env:DATABASE_URL="host=localhost user=soldat password=p dbname=soldat port=5432 sslmode=disable"
+go test -tags=integration ./internal/httpapi
+```
 
 ## Bruno-Collection
 
