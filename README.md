@@ -56,6 +56,8 @@ Verwendete Bibliotheken:
 
 Die REST-Schnittstelle kann damit ueber Bearer Tokens abgesichert werden. Die Middleware prueft dabei das vom Client mitgesendete Access Token gegen die Keycloak-Konfiguration, insbesondere Issuer, Client-ID/Audience und Signatur.
 
+Bei `AUTH_ENABLED=true` wird das Neuanlegen ueber `POST /rest` mit der Keycloak-Middleware abgesichert. Lesen ueber `GET /rest`, `GET /rest/{id}` und `GET /health` bleibt ohne Token moeglich.
+
 ### Einfacher Integrationstest
 
 Ein einfacher Integrationstest kann mit Go-Bordmitteln umgesetzt werden:
@@ -74,6 +76,14 @@ Beispiel fuer lokale Umgebungsvariablen:
 ```bash
 export HTTP_ADDR=":8080"
 export DATABASE_URL="host=localhost user=soldat password=p dbname=soldat port=5432 sslmode=disable"
+```
+
+Optionale Keycloak-Konfiguration:
+
+```bash
+export AUTH_ENABLED="true"
+export OIDC_ISSUER_URL="http://localhost:8843/realms/soldat"
+export OIDC_CLIENT_ID="soldat-client"
 ```
 
 Start des Servers:

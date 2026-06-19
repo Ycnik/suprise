@@ -9,7 +9,11 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func NewRouter(repo repository.SoldatRepository) http.Handler {
+type TokenMiddleware interface {
+	RequireToken(http.Handler) http.Handler
+}
+
+func NewRouter(repo repository.SoldatRepository, keycloak TokenMiddleware) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
@@ -25,8 +29,12 @@ func NewRouter(repo repository.SoldatRepository) http.Handler {
 	})
 
 	r.Get("/rest", soldaten.List)
-	r.Post("/rest", soldaten.Create)
 	r.Get("/rest/{id}", soldaten.FindByID)
+	if keycloak == nil {
+		r.Post("/rest", soldaten.Create)
+	} else {
+		r.With(keycloak.RequireToken).Post("/rest", soldaten.Create)
+	}
 
 	return r
 }

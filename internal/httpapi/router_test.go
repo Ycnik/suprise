@@ -11,8 +11,16 @@ import (
 	"github.com/Ycnik/suprise/internal/repository"
 )
 
+type denyingTokenMiddleware struct{}
+
+func (denyingTokenMiddleware) RequireToken(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusUnauthorized)
+	})
+}
+
 func TestHealth(t *testing.T) {
-	router := NewRouter(repository.NewMemorySoldatRepository())
+	router := NewRouter(repository.NewMemorySoldatRepository(), nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)
 	rec := httptest.NewRecorder()
@@ -28,7 +36,7 @@ func TestHealth(t *testing.T) {
 }
 
 func TestCreateSoldat(t *testing.T) {
-	router := NewRouter(repository.NewMemorySoldatRepository())
+	router := NewRouter(repository.NewMemorySoldatRepository(), nil)
 
 	req := httptest.NewRequest(http.MethodPost, "/rest", strings.NewReader(validSoldatJSON))
 	req.Header.Set("Content-Type", "application/json")
@@ -53,7 +61,7 @@ func TestCreateSoldat(t *testing.T) {
 }
 
 func TestCreateSoldatValidation(t *testing.T) {
-	router := NewRouter(repository.NewMemorySoldatRepository())
+	router := NewRouter(repository.NewMemorySoldatRepository(), nil)
 
 	req := httptest.NewRequest(http.MethodPost, "/rest", strings.NewReader(`{"vorname":"E"}`))
 	req.Header.Set("Content-Type", "application/json")
@@ -66,8 +74,22 @@ func TestCreateSoldatValidation(t *testing.T) {
 	}
 }
 
+func TestCreateSoldatRequiresTokenWhenAuthIsEnabled(t *testing.T) {
+	router := NewRouter(repository.NewMemorySoldatRepository(), denyingTokenMiddleware{})
+
+	req := httptest.NewRequest(http.MethodPost, "/rest", strings.NewReader(validSoldatJSON))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("expected status %d, got %d", http.StatusUnauthorized, rec.Code)
+	}
+}
+
 func TestFindCreatedSoldatWithETag(t *testing.T) {
-	router := NewRouter(repository.NewMemorySoldatRepository())
+	router := NewRouter(repository.NewMemorySoldatRepository(), nil)
 
 	createReq := httptest.NewRequest(http.MethodPost, "/rest", strings.NewReader(validSoldatJSON))
 	createReq.Header.Set("Content-Type", "application/json")

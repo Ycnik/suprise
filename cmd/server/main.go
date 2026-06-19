@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Ycnik/suprise/internal/auth"
 	"github.com/Ycnik/suprise/internal/config"
 	"github.com/Ycnik/suprise/internal/database"
 	"github.com/Ycnik/suprise/internal/httpapi"
@@ -27,7 +28,20 @@ func main() {
 	}
 
 	repo := repository.NewGormSoldatRepository(db)
-	router := httpapi.NewRouter(repo)
+
+	var keycloak *auth.KeycloakMiddleware
+	if cfg.AuthEnabled {
+		if cfg.OIDCIssuerURL == "" || cfg.OIDCClientID == "" {
+			log.Fatal("AUTH_ENABLED=true benoetigt OIDC_ISSUER_URL und OIDC_CLIENT_ID")
+		}
+
+		keycloak, err = auth.NewKeycloakMiddleware(context.Background(), cfg.OIDCIssuerURL, cfg.OIDCClientID)
+		if err != nil {
+			log.Fatalf("keycloak middleware konnte nicht erstellt werden: %v", err)
+		}
+	}
+
+	router := httpapi.NewRouter(repo, keycloak)
 
 	log.Printf("server startet auf %s", cfg.HTTPAddr)
 	if err := http.ListenAndServe(cfg.HTTPAddr, router); err != nil {
