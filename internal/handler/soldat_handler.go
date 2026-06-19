@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Ycnik/suprise/internal/model"
@@ -27,7 +28,8 @@ func NewSoldatHandler(repo repository.SoldatRepository) *SoldatHandler {
 }
 
 type errorResponse struct {
-	Error string `json:"error"`
+	Error   string   `json:"error"`
+	Details []string `json:"details,omitempty"`
 }
 
 type createSoldatRequest struct {
@@ -84,7 +86,7 @@ func (h *SoldatHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.validate.Struct(req); err != nil {
-		writeError(w, http.StatusBadRequest, "validierung fehlgeschlagen")
+		writeValidationError(w, err)
 		return
 	}
 
@@ -129,4 +131,65 @@ func writeJSON(w http.ResponseWriter, status int, value any) {
 
 func writeError(w http.ResponseWriter, status int, message string) {
 	writeJSON(w, status, errorResponse{Error: message})
+}
+
+func writeValidationError(w http.ResponseWriter, err error) {
+	writeJSON(w, http.StatusBadRequest, errorResponse{
+		Error:   "validierung fehlgeschlagen",
+		Details: validationErrorDetails(err),
+	})
+}
+
+func validationErrorDetails(err error) []string {
+	var validationErrors validator.ValidationErrors
+	if !errors.As(err, &validationErrors) {
+		return []string{"request body ist ungueltig"}
+	}
+
+	details := make([]string, 0, len(validationErrors))
+	for _, fieldError := range validationErrors {
+		field := jsonFieldName(fieldError)
+		switch fieldError.Tag() {
+		case "required":
+			details = append(details, field+" ist erforderlich")
+		case "min":
+			details = append(details, field+" muss mindestens "+fieldError.Param()+" Zeichen lang sein")
+		case "oneof":
+			details = append(details, field+" hat keinen erlaubten Wert")
+		default:
+			details = append(details, field+" ist ungueltig")
+		}
+	}
+	return details
+}
+
+func jsonFieldName(fieldError validator.FieldError) string {
+	name := fieldError.Field()
+	switch name {
+	case "Vorname":
+		return "vorname"
+	case "Nachname":
+		return "nachname"
+	case "Geburtsdatum":
+		return "geburtsdatum"
+	case "Geschlecht":
+		return "geschlecht"
+	case "Rang":
+		return "rang"
+	case "Username":
+		return "username"
+	case "Waffe":
+		return nestedJSONField(fieldError, "waffe")
+	case "Seriennummer":
+		return nestedJSONField(fieldError, "seriennummer")
+	default:
+		return strings.ToLower(name)
+	}
+}
+
+func nestedJSONField(fieldError validator.FieldError, field string) string {
+	if strings.Contains(fieldError.StructNamespace(), ".Ausruestung.") {
+		return "ausruestung." + field
+	}
+	return field
 }
