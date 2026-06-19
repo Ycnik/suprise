@@ -26,6 +26,8 @@ Konkret wurde Codex genutzt für:
 
 Die Ergebnisse wurden lokal getestet und schrittweise in Git übernommen.
 
+Die Umsetzung wurde über mehrere kleine Teilaufgaben strukturiert. Die Teilergebnisse wurden über Branches und Pull Requests zusammengeführt. Vor dem Mergen wurden die GitHub-Actions-Checks betrachtet.
+
 ### Chat-URLs, z.B. https://chatgpt.com
 
 Verwendet wurde OpenAI Codex über ChatGPT:
@@ -266,9 +268,13 @@ Die Arbeit wurde bewusst in kleinen Schritten durchgeführt:
 
 Teilaufgaben wurden über Branches und Pull Requests zusammengeführt. Dadurch waren die Änderungen besser prüfbar und Konflikte leichter zu behandeln.
 
+Wichtige Regel im Workflow: Änderungen wurden nicht direkt groß auf `main` gesammelt, sondern über thematische Arbeitsbranches und möglichst kleine Commits vorbereitet.
+
 ## Prompts/Requests an KI-Agent/en
 
 Die folgenden Prompts sind sinngemäß wiedergegeben. Ziel war nicht, unstrukturierte Chat-Verläufe zu dokumentieren, sondern die relevanten Arbeitsaufträge nachvollziehbar zu machen.
+
+Die Prompts wurden bewusst als Arbeitsaufträge formuliert. Nach der Ausgabe der KI wurden Code, Tests und Verhalten überprüft und bei Bedarf angepasst.
 
 ### Aufgabenanalyse
 
@@ -322,6 +328,10 @@ Arbeite auf einem eigenen Branch für den HTTP-Teil. Implementiere Routing, Hand
 Arbeite parallel auf einem eigenen Branch für Authentifizierung, CI und Dokumentation. Implementiere Keycloak/OIDC optional, ohne die lesenden Endpunkte zu schützen.
 ```
 
+```text
+Prüfe vor dem Merge, ob der Branch aktuell zu main ist, ob die GitHub-Actions-Checks grün sind und ob keine Secrets oder Tokens im Commit enthalten sind.
+```
+
 ### Keycloak/OIDC
 
 ```text
@@ -350,6 +360,24 @@ Teste Healthcheck, erfolgreiches Neuanlegen, Validierungsfehler, Finden per ID, 
 Richte GitHub Actions so ein, dass gofmt, go vet und go test bei Push und Pull Request ausgeführt werden.
 ```
 
+```text
+Ergänze optionale PostgreSQL-Integrationstests so, dass sie gegen die echte soldat-Datenbank laufen können, aber den normalen CI-Lauf mit go test ./... nicht blockieren.
+```
+
+```text
+Verschiebe Tests mit echter PostgreSQL-Abhängigkeit hinter den Build-Tag integration und dokumentiere den Aufruf mit go test -tags=integration ./internal/httpapi.
+```
+
+### Docker und Lasttests
+
+```text
+Erstelle einen Dockerfile für die Go-Anwendung, sodass die API als Container gebaut und gestartet werden kann.
+```
+
+```text
+Ergänze einfache Benchmarks für die HTTP-Endpunkte, um Healthcheck, Listen, Finden per ID und Neuanlegen unter Last grob prüfen zu können.
+```
+
 ### Bruno-Collection
 
 ```text
@@ -358,6 +386,78 @@ Erstelle eine Bruno-Collection für die REST-Endpunkte. Sie soll Requests für H
 
 ```text
 Speichere Tokens und Client Secrets nicht im Repository. Nutze Bruno-Variablen, damit der Access Token nach dem Token-Request automatisch für den geschützten POST-Request verwendet werden kann.
+```
+
+```text
+Passe die Bruno-Requests so an, dass gültige Beispielkörper verwendet werden und keine echten Bearer Tokens oder Client Secrets im Repository gespeichert werden.
+```
+
+```text
+Prüfe, warum ein POST /rest mit 500 fehlschlägt. Vergleiche Request-Body, Enum-Werte und Unique Constraints der PostgreSQL-Datenbank und leite daraus eine saubere Korrektur ab.
+```
+
+### Fehlerbehandlung und Nachbesserungen
+
+```text
+Verbessere die Validierungsfehler so, dass die API nicht nur validierung fehlgeschlagen zurückgibt, sondern konkrete Details zu betroffenen Feldern und Gründen.
+```
+
+```text
+Wenn ein Datenbankfehler durch falsche Enum-Werte entstehen kann, validiere diese Werte bereits vor dem Insert und antworte mit 400 Bad Request.
+```
+
+```text
+Prüfe die Bruno-Collection auf versehentlich gespeicherte Tokens, Secrets oder veraltete Testdaten und korrigiere nur die betroffenen Request-Dateien.
+```
+
+### Gemeinsame Arbeitsaufträge
+
+```text
+Analysiere die vorhandenen vorherigen Abgaben und nutze die bestehende PostgreSQL-Datenbank mit dem Schema soldat als Grundlage für die neue Go-REST-API.
+```
+
+```text
+Implementiere die Basisstruktur mit Konfiguration, GORM-Anbindung, Repository-Schicht und Datenmodellen. Achte darauf, dass die Struktur für weitere HTTP- und Auth-Branches geeignet ist.
+```
+
+```text
+Ergänze optionale Keycloak-Authentifizierung. Bei AUTH_ENABLED=true soll POST /rest geschützt sein, während GET /health, GET /rest und GET /rest/{id} öffentlich bleiben.
+```
+
+```text
+Richte GitHub Actions für gofmt, go vet und go test ein. Die Checks sollen bei Pull Requests nach main laufen.
+```
+
+```text
+Erstelle eine README, die Namen, Repository-Link, verwendete KI-Werkzeuge, Bibliotheken, Tests, Keycloak, Bruno und die wichtigsten KI-Arbeitsaufträge nachvollziehbar dokumentiert.
+```
+
+```text
+Prüfe bei jeder Änderung, ob ein eigener Branch sinnvoll ist, ob kleine Commits entstehen und ob keine Secrets oder lokalen Tokens ins Repository gelangen.
+```
+
+```text
+Arbeite auf einem eigenen Branch für die HTTP-Schicht. Implementiere GET /health, GET /rest, GET /rest/{id} und POST /rest mit chi und dem vorhandenen Repository-Interface.
+```
+
+```text
+Erstelle eine Bruno-Collection mit Requests für Healthcheck, Auflisten, Finden per ID, gültiges Neuanlegen, ungültiges Neuanlegen, Token abrufen und Neuanlegen mit Bearer Token.
+```
+
+```text
+Ergänze echte PostgreSQL-Integrationstests für die HTTP-Schicht. Die Tests sollen die reale Datenbank verwenden können, aber nur mit dem Build-Tag integration laufen.
+```
+
+```text
+Erstelle Benchmarks für die wichtigsten HTTP-Endpunkte und achte darauf, dass normale Tests weiterhin ohne Docker und ohne Datenbank laufen.
+```
+
+```text
+Erstelle einen Dockerfile für den Build der Go-Anwendung und integriere ihn über einen eigenen Pull Request.
+```
+
+```text
+Rebase den eigenen Branch regelmäßig auf origin/main, pushe mit --force-with-lease nur auf den eigenen Branch und merge erst, wenn die Checks grün sind.
 ```
 
 ### Abschlussprüfung
