@@ -72,6 +72,20 @@ func TestCreateSoldatValidation(t *testing.T) {
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rec.Code)
 	}
+
+	var response struct {
+		Error   string   `json:"error"`
+		Details []string `json:"details"`
+	}
+	if err := json.NewDecoder(rec.Body).Decode(&response); err != nil {
+		t.Fatalf("decode validation response: %v", err)
+	}
+	if response.Error != "validierung fehlgeschlagen" {
+		t.Fatalf("unexpected validation error: %q", response.Error)
+	}
+	if len(response.Details) == 0 {
+		t.Fatal("expected validation details")
+	}
 }
 
 func TestCreateSoldatRejectsInvalidEnumValue(t *testing.T) {
