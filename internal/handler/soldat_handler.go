@@ -34,11 +34,11 @@ type createSoldatRequest struct {
 	Vorname      string  `json:"vorname" validate:"required,min=2"`
 	Nachname     string  `json:"nachname" validate:"required,min=2"`
 	Geburtsdatum string  `json:"geburtsdatum,omitempty"`
-	Geschlecht   *string `json:"geschlecht,omitempty"`
-	Rang         *string `json:"rang,omitempty"`
+	Geschlecht   *string `json:"geschlecht,omitempty" validate:"omitempty,oneof=MAENNLICH WEIBLICH"`
+	Rang         *string `json:"rang,omitempty" validate:"omitempty,oneof=REKRUT SOLDAT ELITE-SOLDAT CAPTAIN KOMMANDANT"`
 	Username     string  `json:"username" validate:"required,min=3"`
 	Ausruestung  *struct {
-		Waffe        string `json:"waffe" validate:"required"`
+		Waffe        string `json:"waffe" validate:"required,oneof=ODM_GEAR Schrotflinte Klinge"`
 		Seriennummer string `json:"seriennummer" validate:"required"`
 	} `json:"ausruestung,omitempty" validate:"omitempty"`
 }

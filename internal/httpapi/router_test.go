@@ -74,6 +74,21 @@ func TestCreateSoldatValidation(t *testing.T) {
 	}
 }
 
+func TestCreateSoldatRejectsInvalidEnumValue(t *testing.T) {
+	router := NewRouter(repository.NewMemorySoldatRepository(), nil)
+	body := strings.Replace(validSoldatJSON, `"rang": "SOLDAT"`, `"rang": "ELITE_SOLDAT"`, 1)
+
+	req := httptest.NewRequest(http.MethodPost, "/rest", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rec.Code)
+	}
+}
+
 func TestCreateSoldatRequiresTokenWhenAuthIsEnabled(t *testing.T) {
 	router := NewRouter(repository.NewMemorySoldatRepository(), denyingTokenMiddleware{})
 
