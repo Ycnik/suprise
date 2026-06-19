@@ -1,0 +1,112 @@
+package httpapi
+
+import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
+	"github.com/Ycnik/suprise/internal/model"
+	"github.com/Ycnik/suprise/internal/repository"
+)
+
+func TestHealth(t *testing.T) {
+	router := NewRouter(repository.NewMemorySoldatRepository())
+
+	req := httptest.NewRequest(http.MethodGet, "/health", nil)
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rec.Code)
+	}
+	if strings.TrimSpace(rec.Body.String()) != `{"status":"ok"}` {
+		t.Fatalf("unexpected response body: %s", rec.Body.String())
+	}
+}
+
+func TestCreateSoldat(t *testing.T) {
+	router := NewRouter(repository.NewMemorySoldatRepository())
+
+	req := httptest.NewRequest(http.MethodPost, "/rest", strings.NewReader(validSoldatJSON))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("expected status %d, got %d: %s", http.StatusCreated, rec.Code, rec.Body.String())
+	}
+
+	var soldat model.Soldat
+	if err := json.NewDecoder(rec.Body).Decode(&soldat); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if soldat.ID != 1000 {
+		t.Fatalf("expected created soldat id 1000, got %d", soldat.ID)
+	}
+	if soldat.Geburtsdatum == nil {
+		t.Fatal("expected geburtsdatum to be parsed")
+	}
+}
+
+func TestCreateSoldatValidation(t *testing.T) {
+	router := NewRouter(repository.NewMemorySoldatRepository())
+
+	req := httptest.NewRequest(http.MethodPost, "/rest", strings.NewReader(`{"vorname":"E"}`))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rec.Code)
+	}
+}
+
+func TestFindCreatedSoldatWithETag(t *testing.T) {
+	router := NewRouter(repository.NewMemorySoldatRepository())
+
+	createReq := httptest.NewRequest(http.MethodPost, "/rest", strings.NewReader(validSoldatJSON))
+	createReq.Header.Set("Content-Type", "application/json")
+	createRec := httptest.NewRecorder()
+	router.ServeHTTP(createRec, createReq)
+
+	if createRec.Code != http.StatusCreated {
+		t.Fatalf("expected create status %d, got %d: %s", http.StatusCreated, createRec.Code, createRec.Body.String())
+	}
+
+	findReq := httptest.NewRequest(http.MethodGet, "/rest/1000", nil)
+	findRec := httptest.NewRecorder()
+	router.ServeHTTP(findRec, findReq)
+
+	if findRec.Code != http.StatusOK {
+		t.Fatalf("expected find status %d, got %d: %s", http.StatusOK, findRec.Code, findRec.Body.String())
+	}
+	if findRec.Header().Get("ETag") != `"0"` {
+		t.Fatalf("expected ETag %q, got %q", `"0"`, findRec.Header().Get("ETag"))
+	}
+
+	var soldat model.Soldat
+	if err := json.NewDecoder(findRec.Body).Decode(&soldat); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if soldat.ID != 1000 || soldat.Username != "eren" {
+		t.Fatalf("unexpected soldat response: %+v", soldat)
+	}
+}
+
+const validSoldatJSON = `{
+	"vorname": "Eren",
+	"nachname": "Jaeger",
+	"geburtsdatum": "2000-01-01",
+	"geschlecht": "MAENNLICH",
+	"rang": "SOLDAT",
+	"username": "eren",
+	"ausruestung": {
+		"waffe": "ODM_GEAR",
+		"seriennummer": "AOT-12345ABC"
+	}
+}`
