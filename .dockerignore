@@ -1,0 +1,12 @@
+.git
+.github
+.gocache
+.gomodcache
+bin
+bruno
+cpu.out
+mem.out
+*.test
+*.test.exe
+*.out
+README.md
