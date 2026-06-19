@@ -14,6 +14,10 @@ type TokenMiddleware interface {
 }
 
 func NewRouter(repo repository.SoldatRepository, keycloak TokenMiddleware) http.Handler {
+	return NewRouterWithDevReset(repo, keycloak, nil)
+}
+
+func NewRouterWithDevReset(repo repository.SoldatRepository, keycloak TokenMiddleware, resetHandler http.HandlerFunc) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
@@ -34,6 +38,10 @@ func NewRouter(repo repository.SoldatRepository, keycloak TokenMiddleware) http.
 		r.Post("/rest", soldaten.Create)
 	} else {
 		r.With(keycloak.RequireToken).Post("/rest", soldaten.Create)
+	}
+
+	if resetHandler != nil {
+		r.Post("/dev/reset-db", resetHandler)
 	}
 
 	return r
