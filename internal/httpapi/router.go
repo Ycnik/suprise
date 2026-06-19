@@ -25,6 +25,7 @@ func NewRouter(repo repository.SoldatRepository) http.Handler {
 	})
 
 	r.Get("/rest", soldaten.List)
+	r.Post("/rest", soldaten.Create)
 	r.Get("/rest/{id}", soldaten.FindByID)
 
 	return r
