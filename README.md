@@ -71,11 +71,18 @@ Fuer Tests mit echter PostgreSQL-Datenbank kann optional `github.com/testcontain
 
 Voraussetzung ist ein laufender PostgreSQL-Server mit dem Schema `soldat` aus den vorherigen Abgaben.
 
-Beispiel fuer lokale Umgebungsvariablen:
+Beispiel fuer lokale Umgebungsvariablen unter Linux/macOS:
 
 ```bash
 export HTTP_ADDR=":8080"
 export DATABASE_URL="host=localhost user=soldat password=p dbname=soldat port=5432 sslmode=disable"
+```
+
+Beispiel fuer lokale Umgebungsvariablen unter PowerShell:
+
+```powershell
+$env:HTTP_ADDR=":8080"
+$env:DATABASE_URL="host=localhost user=soldat password=p dbname=soldat port=5432 sslmode=disable"
 ```
 
 Optionale Keycloak-Konfiguration:
@@ -84,6 +91,14 @@ Optionale Keycloak-Konfiguration:
 export AUTH_ENABLED="true"
 export OIDC_ISSUER_URL="http://localhost:8843/realms/soldat"
 export OIDC_CLIENT_ID="soldat-client"
+```
+
+PowerShell:
+
+```powershell
+$env:AUTH_ENABLED="true"
+$env:OIDC_ISSUER_URL="http://localhost:8843/realms/soldat"
+$env:OIDC_CLIENT_ID="soldat-client"
 ```
 
 Start des Servers:
@@ -100,24 +115,155 @@ go vet ./...
 go test ./...
 ```
 
+## Bruno-Collection
+
+Zur manuellen Pruefung der REST-Schnittstelle liegt eine Bruno-Collection im Repository:
+
+```text
+bruno/suprise-http
+```
+
+Enthaltene Requests:
+
+* `GET /health`
+* `GET /rest`
+* `GET /rest/{id}`
+* `POST /rest` mit gueltigen Soldat-Daten
+* `POST /rest` mit ungueltigen Soldat-Daten
+
+Die lokale Bruno-Umgebung verwendet:
+
+```text
+baseUrl=http://localhost:8080
+```
+
 ## Prompts/Requests an KI-Agent/en
 
-Die KI wurde schrittweise und unterstuetzend eingesetzt. Dabei wurden sinngemaess folgende Prompts bzw. Requests verwendet:
+Die KI wurde schrittweise und unterstuetzend eingesetzt. Die Ergebnisse wurden geprueft, angepasst und in kleinen Git-Commits umgesetzt. Die wesentlichen Prompts bzw. Arbeitsauftraege waren:
 
-1. Analysiere die Aufgabenstellung und fasse zusammen, welche Bestandteile fuer die Abgabe dokumentiert werden muessen.
+### Aufgabenanalyse und Technologieauswahl
 
-2. Schlage eine einfache technische Struktur fuer eine prototypische Go-Anwendung mit REST-Schnittstelle vor.
+```text
+Analysiere die Aufgabenstellung fuer den Programmierworkshop und fasse zusammen, welche Bestandteile fuer die Abgabe dokumentiert und implementiert werden muessen.
+```
 
-3. Welche Go-Bibliothek eignet sich fuer Routing und Middleware bei einer kleinen REST-API?
+```text
+Schlage eine realistische Go-Projektstruktur fuer eine prototypische REST-API mit PostgreSQL, Validierung, optionaler Keycloak-OIDC-Absicherung und einfachen Tests vor.
+```
 
-4. Welche Bibliothek kann fuer die Validierung eingehender JSON-Daten beim Neuanlegen von Datensaetzen verwendet werden?
+```text
+Welche Go-Bibliotheken eignen sich fuer Routing, Validierung, OR-Mapping mit PostgreSQL, OIDC mit Keycloak und HTTP-Integrationstests?
+```
 
-5. Schlage eine passende OR-Mapping-Bibliothek fuer die Anbindung an PostgreSQL vor.
+### Implementierung der Basis
 
-6. Wie kann eine REST-Schnittstelle optional ueber OIDC mit Keycloak abgesichert werden?
+```text
+Implementiere die Basis fuer ein Go-Projekt mit Konfiguration ueber Umgebungsvariablen und PostgreSQL-Anbindung ueber GORM. Nutze das vorhandene Datenbankschema soldat aus den vorherigen Abgaben.
+```
 
-7. Welche Bibliotheken eignen sich fuer einfache Integrationstests einer Go-REST-API?
+```text
+Modelliere die Tabellen soldat, ausruestung und verletzung als Go-Structs fuer GORM. Die Implementierung soll zum vorhandenen PostgreSQL-Schema passen.
+```
 
-8. Formuliere die Ergebnisse strukturiert fuer eine kurze Workshop-Dokumentation in Markdown.
+```text
+Erstelle ein Repository-Interface fuer Soldaten mit Funktionen zum Auflisten, Finden nach ID und Neuanlegen. Implementiere eine GORM-Variante fuer PostgreSQL und eine In-Memory-Variante fuer Tests.
+```
 
-Die Antworten der KI wurden geprueft und fuer die Dokumentation zusammengefasst.
+### Arbeitsauftrag an Yannik fuer HTTP/Routing
+
+```text
+Du arbeitest im Repo https://github.com/Ycnik/suprise.git auf einem eigenen Branch.
+
+Ausgangslage:
+- Der Branch origin/workshop-prototype existiert bereits.
+- Darin sind Go-Modul, Config, PostgreSQL/GORM-Anbindung, Soldat-Datenmodell und Repository-Schicht vorhanden.
+- Die Datenbank kommt aus den vorherigen Abgaben und nutzt das Schema soldat mit Tabellen soldat, ausruestung und verletzung.
+- Bitte nicht auf main oder workshop-prototype direkt arbeiten.
+
+Deine Aufgabe:
+1. Hole den Basisbranch:
+   git fetch origin
+   git switch -c yanik-http origin/workshop-prototype
+
+2. Implementiere den HTTP-/REST-Teil in Go:
+   - cmd/server/main.go
+   - internal/httpapi/router.go
+   - internal/handler/soldat_handler.go
+
+3. REST-Endpunkte:
+   - GET /health
+   - GET /rest
+   - GET /rest/{id}
+   - POST /rest
+
+4. Anforderungen:
+   - chi als Router verwenden
+   - Repository-Interface aus internal/repository nutzen
+   - Keine direkte DB-Logik im Handler
+   - POST mit go-playground/validator validieren
+   - JSON Request/Response
+   - Bei GET /rest/{id} einen ETag-Header mit der Version setzen
+   - Fehler sauber als JSON zurueckgeben
+
+5. Kleine Commits erstellen und den Branch nach origin pushen.
+```
+
+### Keycloak, CI und Dokumentation
+
+```text
+Arbeite auf einem eigenen Branch fuer Auth, CI und README. Implementiere Keycloak/OIDC getrennt vom HTTP-Branch.
+
+Aufgaben:
+- Go-Dependencies mit go mod tidy aufloesen
+- Keycloak/OIDC-Middleware vorbereiten
+- GitHub Actions fuer go test ./... einrichten
+- README mit Start-, Test- und ENV-Hinweisen aktualisieren
+- Kleine Commits erstellen und Branch nach origin pushen
+```
+
+```text
+Schliesse Keycloak optional an. Wenn AUTH_ENABLED=true ist, soll POST /rest einen Bearer Token benoetigen. GET /health, GET /rest und GET /rest/{id} sollen ohne Token erreichbar bleiben.
+```
+
+### Tests und API-Polish
+
+```text
+Schreibe Tests fuer die HTTP-Schicht mit net/http/httptest und dem vorhandenen In-Memory-Repository.
+
+Teste mindestens:
+- GET /health liefert 200 und {"status":"ok"}
+- POST /rest mit gueltigen Soldat-Daten liefert 201
+- POST /rest mit ungueltigen Daten liefert 400
+- GET /rest/{id} liefert einen angelegten Soldaten
+- GET /rest/{id} setzt einen ETag-Header
+```
+
+```text
+Pruefe, ob POST /rest mit geburtsdatum im Format "2000-01-01" funktioniert. Falls nicht, parse das Datum im Handler mit time.Parse("2006-01-02", req.Geburtsdatum) und gib bei ungueltigem Datum 400 zurueck.
+```
+
+### Bruno-Collection
+
+```text
+Erstelle eine Bruno HTTP Collection fuer die vorhandenen REST-Endpunkte.
+
+Wichtig:
+- Arbeite auf einem eigenen Branch.
+- Fuege nur Dateien unter bruno/ hinzu.
+- Keine Go-Dateien, README oder Keycloak-Konfiguration aendern.
+
+Die Collection soll Requests enthalten fuer:
+- GET /health
+- GET /rest
+- GET /rest/{id}
+- POST /rest mit gueltigem Soldat-JSON
+- POST /rest mit ungueltigem Soldat-JSON
+
+Nutze eine lokale Environment-Datei mit baseUrl=http://localhost:8080.
+```
+
+### Abschliessende Pruefung
+
+```text
+Pruefe den finalen main-Stand mit gofmt, go vet und go test. Stelle sicher, dass Keycloak optional angeschlossen ist, die Bruno-Collection vorhanden ist und die README den implementierten Stand beschreibt.
+```
