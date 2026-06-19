@@ -1,0 +1,20 @@
+opencollection: 1.0.0
+
+info:
+  name: suprise-http
+
+request:
+  variables:
+    - name: baseUrl
+      value: http://localhost:8080
+    - name: restUrl
+      value: "{{baseUrl}}/rest"
+    - name: soldatId
+      value: "1"
+
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

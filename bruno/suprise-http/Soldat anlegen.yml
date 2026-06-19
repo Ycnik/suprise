@@ -1,0 +1,52 @@
+info:
+  name: Soldat anlegen
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{restUrl}}"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "vorname": "Eren",
+        "nachname": "Jaeger",
+        "geburtsdatum": "2000-01-01",
+        "geschlecht": "MAENNLICH",
+        "rang": "SOLDAT",
+        "username": "eren",
+        "ausruestung": {
+          "waffe": "ODM_GEAR",
+          "seriennummer": "AOT-12345ABC"
+        }
+      }
+  auth: none
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "201"
+    - expression: res.headers['content-type']
+      operator: matches
+      value: ^application\/json
+    - expression: res.body.id
+      operator: isDefined
+    - expression: res.body.username
+      operator: eq
+      value: eren
+    - expression: res.body.ausruestung.waffe
+      operator: eq
+      value: ODM_GEAR
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
