@@ -22,6 +22,8 @@ http:
         value: "{{password}}"
       - name: client_id
         value: "{{clientId}}"
+      - name: client_secret
+        value: "{{clientSecret}}"
       - name: scope
         value: openid
   auth: none

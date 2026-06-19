@@ -89,16 +89,16 @@ Optionale Keycloak-Konfiguration:
 
 ```bash
 export AUTH_ENABLED="true"
-export OIDC_ISSUER_URL="http://localhost:8880/realms/javascript"
-export OIDC_CLIENT_ID="javascript-client"
+export OIDC_ISSUER_URL="http://localhost:8880/realms/suprise"
+export OIDC_CLIENT_ID="suprise-client"
 ```
 
 PowerShell:
 
 ```powershell
 $env:AUTH_ENABLED="true"
-$env:OIDC_ISSUER_URL="http://localhost:8880/realms/javascript"
-$env:OIDC_CLIENT_ID="javascript-client"
+$env:OIDC_ISSUER_URL="http://localhost:8880/realms/suprise"
+$env:OIDC_CLIENT_ID="suprise-client"
 ```
 
 Start des Servers:
@@ -142,9 +142,72 @@ baseUrl=http://localhost:8080
 
 Bei aktivierter Keycloak-Absicherung (`AUTH_ENABLED=true`) ist die Reihenfolge:
 
-1. `Keycloak Token admin` ausfuehren. Der `access_token` wird automatisch als Bruno-Variable `bearerToken` gespeichert.
-2. `Soldat anlegen ohne Token` ausfuehren und `401` erwarten.
-3. `Soldat anlegen mit Token` ausfuehren und `201` erwarten.
+1. In Keycloak den Realm `suprise`, den Client `suprise-client` und den Benutzer `admin` anlegen.
+2. Das Client Secret aus Keycloak in Bruno in der Umgebung `local` bei `clientSecret` eintragen.
+3. `Keycloak Token admin` ausfuehren. Der `access_token` wird automatisch als Bruno-Variable `bearerToken` gespeichert.
+4. `Soldat anlegen ohne Token` ausfuehren und `401` erwarten.
+5. `Soldat anlegen mit Token` ausfuehren und `201` erwarten.
+
+Falls Keycloak den Token-Request mit `invalid_client` ablehnt, muessen `clientId` und `clientSecret` in der Bruno-Umgebung zum Keycloak-Client passen.
+
+### Keycloak einrichten
+
+Im Browser Keycloak oeffnen:
+
+```text
+http://localhost:8880
+```
+
+Anmeldung am Master-Admin:
+
+```text
+Username: tmp
+Password: p
+```
+
+Realm erstellen:
+
+```text
+Manage realms -> Create realm
+Realm name: suprise
+```
+
+Client erstellen:
+
+```text
+Clients -> Create client
+Client ID: suprise-client
+Client authentication: On
+Standard flow: On
+Direct access grants: On
+Service account roles: On
+Valid redirect URIs: *
+Web origins: +
+```
+
+Client Secret kopieren:
+
+```text
+Clients -> suprise-client -> Credentials -> Client Secret
+```
+
+Diesen Wert in Bruno in der Umgebung `local` als `clientSecret` eintragen.
+
+Benutzer erstellen:
+
+```text
+Users -> Add user
+Username: admin
+Email: admin@acme.com
+```
+
+Passwort setzen:
+
+```text
+Credentials -> Set password
+Password: p
+Temporary: Off
+```
 
 ## Prompts/Requests an KI-Agent/en
 

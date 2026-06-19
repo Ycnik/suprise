@@ -9,13 +9,15 @@ variables:
   - name: keycloakBaseUrl
     value: http://localhost:8880
   - name: realm
-    value: javascript
+    value: suprise
   - name: oidcIssuerUrl
     value: "{{keycloakBaseUrl}}/realms/{{realm}}"
   - name: oidcTokenUrl
     value: "{{oidcIssuerUrl}}/protocol/openid-connect/token"
   - name: clientId
-    value: javascript-client
+    value: suprise-client
+  - name: clientSecret
+    value: ""
   - name: username
     value: admin
   - name: password
