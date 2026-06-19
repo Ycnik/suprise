@@ -142,7 +142,7 @@ baseUrl=http://localhost:8080
 
 Bei aktivierter Keycloak-Absicherung (`AUTH_ENABLED=true`) ist die Reihenfolge:
 
-1. `Keycloak Token admin` ausfuehren.
+1. `Keycloak Token admin` ausfuehren. Der `access_token` wird automatisch als Bruno-Variable `bearerToken` gespeichert.
 2. `Soldat anlegen ohne Token` ausfuehren und `401` erwarten.
 3. `Soldat anlegen mit Token` ausfuehren und `201` erwarten.
 

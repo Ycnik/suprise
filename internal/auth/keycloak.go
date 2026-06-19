@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 
@@ -11,6 +12,12 @@ import (
 
 type KeycloakMiddleware struct {
 	verifier *oidc.IDTokenVerifier
+	clientID string
+}
+
+type keycloakClaims struct {
+	AuthorizedParty string `json:"azp"`
+	ClientID        string `json:"client_id"`
 }
 
 func NewKeycloakMiddleware(ctx context.Context, issuerURL string, clientID string) (*KeycloakMiddleware, error) {
@@ -20,7 +27,8 @@ func NewKeycloakMiddleware(ctx context.Context, issuerURL string, clientID strin
 	}
 
 	return &KeycloakMiddleware{
-		verifier: provider.Verifier(&oidc.Config{ClientID: clientID}),
+		verifier: provider.Verifier(&oidc.Config{SkipClientIDCheck: true}),
+		clientID: clientID,
 	}, nil
 }
 
@@ -32,13 +40,37 @@ func (m *KeycloakMiddleware) RequireToken(next http.Handler) http.Handler {
 			return
 		}
 
-		if _, err := m.verifier.Verify(r.Context(), token); err != nil {
+		if err := m.verifyToken(r.Context(), token); err != nil {
 			writeAuthError(w, http.StatusUnauthorized, "invalid bearer token")
 			return
 		}
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func (m *KeycloakMiddleware) verifyToken(ctx context.Context, rawToken string) error {
+	token, err := m.verifier.Verify(ctx, rawToken)
+	if err != nil {
+		return err
+	}
+
+	for _, audience := range token.Audience {
+		if audience == m.clientID {
+			return nil
+		}
+	}
+
+	var claims keycloakClaims
+	if err := token.Claims(&claims); err != nil {
+		return err
+	}
+
+	if claims.AuthorizedParty == m.clientID || claims.ClientID == m.clientID {
+		return nil
+	}
+
+	return errors.New("token was not issued for configured client")
 }
 
 func bearerToken(header string) string {

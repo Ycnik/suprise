@@ -28,7 +28,7 @@ http:
       }
   auth:
     type: bearer
-    token: "{{idToken}}"
+    token: "{{bearerToken}}"
 
 runtime:
   assertions:

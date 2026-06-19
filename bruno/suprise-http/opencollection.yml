@@ -25,7 +25,7 @@ request:
       value: admin
     - name: password
       value: p
-    - name: idToken
+    - name: bearerToken
       value: ""
 
 bundled: false

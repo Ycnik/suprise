@@ -34,13 +34,13 @@ runtime:
     - expression: res.headers['content-type']
       operator: matches
       value: ^application\/json
-    - expression: res.body.id_token
+    - expression: res.body.access_token
       operator: matches
       value: .+\..+\..+
   scripts:
     - type: post-response
       code: |-
-        bru.setVar('idToken', res.body.id_token);
+        bru.setVar('bearerToken', res.body.access_token);
 
 settings:
   encodeUrl: true
