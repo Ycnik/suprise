@@ -16,10 +16,10 @@ variables:
     value: "{{oidcIssuerUrl}}/protocol/openid-connect/token"
   - name: clientId
     value: suprise-client
-  - name: clientSecret
-    value: ""
+  - secret: true
+    name: clientSecret
   - name: username
-    value: admin
+    value: workshop
   - name: password
     value: p
   - name: bearerToken

@@ -24,7 +24,7 @@ request:
     - name: clientSecret
       value: ""
     - name: username
-      value: admin
+      value: workshop
     - name: password
       value: p
     - name: bearerToken
