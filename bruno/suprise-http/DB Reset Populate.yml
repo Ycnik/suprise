@@ -1,0 +1,27 @@
+info:
+  name: DB Reset Populate
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: "{{baseUrl}}/dev/reset-db"
+  headers:
+    - name: Accept
+      value: application/json
+  auth: none
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+    - expression: res.body.status
+      operator: eq
+      value: ok
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

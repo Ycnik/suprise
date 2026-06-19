@@ -143,6 +143,14 @@ $env:OIDC_ISSUER_URL="http://localhost:8880/realms/suprise"
 $env:OIDC_CLIENT_ID="suprise-client"
 ```
 
+Optionaler lokaler Reset-Endpunkt für Bruno:
+
+```powershell
+$env:DB_RESET_ENABLED="true"
+```
+
+Dann kann die Datenbank über `POST /dev/reset-db` zurückgesetzt und neu befüllt werden. Dieser Endpunkt ist standardmäßig deaktiviert.
+
 Ohne Keycloak:
 
 ```powershell
@@ -172,6 +180,34 @@ Echte PostgreSQL-Integrationstests:
 ```powershell
 $env:DATABASE_URL="host=localhost user=soldat password=p dbname=soldat port=5432 sslmode=disable"
 go test -tags=integration ./internal/httpapi
+```
+
+### Datenbank zurücksetzen und befüllen
+
+Für lokale Tests kann die PostgreSQL-Datenbank auf feste Beispieldaten zurückgesetzt werden. Dadurch können Bruno-Requests wieder mit bekannten IDs und eindeutigen Testdaten ausgeführt werden.
+
+PowerShell:
+
+```powershell
+.\scripts\db\reset_populate.ps1
+```
+
+Alternativ kann bei gestartetem Server und `DB_RESET_ENABLED=true` der Bruno-Request `DB Reset Populate` ausgeführt werden.
+
+Der Reset löscht die Daten in `soldat.soldat`, `soldat.ausruestung` und `soldat.verletzung`, setzt die Identity-Zähler zurück und fügt neue Beispieldaten ein.
+
+Enthaltene Testdaten:
+
+* `1000` - `eren-test`
+* `1001` - `mikasa-test`
+* `1002` - `armin-test`
+* `1003` - `levi-test`
+* `1004` - `historia-test`
+
+Wenn ein anderer Containername verwendet wird:
+
+```powershell
+.\scripts\db\reset_populate.ps1 -Container postgres
 ```
 
 ## Bruno-Collection

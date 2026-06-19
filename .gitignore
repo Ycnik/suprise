@@ -4,3 +4,4 @@ INTERN_VORGEHEN.md
 # Lokale Go-Caches
 .gocache/
 .gomodcache/
+.gotmp/

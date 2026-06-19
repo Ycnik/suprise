@@ -103,6 +103,34 @@ func TestCreateSoldatRejectsInvalidEnumValue(t *testing.T) {
 	}
 }
 
+func TestDevResetRouteCanBeRegistered(t *testing.T) {
+	router := NewRouterWithDevReset(repository.NewMemorySoldatRepository(), nil, func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	req := httptest.NewRequest(http.MethodPost, "/dev/reset-db", nil)
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rec.Code)
+	}
+}
+
+func TestDevResetRouteIsDisabledByDefault(t *testing.T) {
+	router := NewRouter(repository.NewMemorySoldatRepository(), nil)
+
+	req := httptest.NewRequest(http.MethodPost, "/dev/reset-db", nil)
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("expected status %d, got %d", http.StatusNotFound, rec.Code)
+	}
+}
+
 func TestCreateSoldatRequiresTokenWhenAuthIsEnabled(t *testing.T) {
 	router := NewRouter(repository.NewMemorySoldatRepository(), denyingTokenMiddleware{})
 

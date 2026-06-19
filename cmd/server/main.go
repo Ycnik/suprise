@@ -9,6 +9,7 @@ import (
 	"github.com/Ycnik/suprise/internal/auth"
 	"github.com/Ycnik/suprise/internal/config"
 	"github.com/Ycnik/suprise/internal/database"
+	"github.com/Ycnik/suprise/internal/handler"
 	"github.com/Ycnik/suprise/internal/httpapi"
 	"github.com/Ycnik/suprise/internal/repository"
 )
@@ -41,7 +42,13 @@ func main() {
 		}
 	}
 
-	router := httpapi.NewRouter(repo, keycloak)
+	var resetHandler http.HandlerFunc
+	if cfg.DBResetEnabled {
+		log.Print("dev reset endpoint ist aktiv: POST /dev/reset-db")
+		resetHandler = handler.NewDevHandler(db).ResetDatabase
+	}
+
+	router := httpapi.NewRouterWithDevReset(repo, keycloak, resetHandler)
 
 	log.Printf("server startet auf %s", cfg.HTTPAddr)
 	if err := http.ListenAndServe(cfg.HTTPAddr, router); err != nil {
