@@ -130,12 +130,21 @@ Enthaltene Requests:
 * `GET /rest/{id}`
 * `POST /rest` mit gueltigen Soldat-Daten
 * `POST /rest` mit ungueltigen Soldat-Daten
+* Keycloak-Token fuer `admin` abrufen
+* `POST /rest` ohne Token pruefen
+* `POST /rest` mit Bearer Token pruefen
 
 Die lokale Bruno-Umgebung verwendet:
 
 ```text
 baseUrl=http://localhost:8080
 ```
+
+Bei aktivierter Keycloak-Absicherung (`AUTH_ENABLED=true`) ist die Reihenfolge:
+
+1. `Keycloak Token admin` ausfuehren.
+2. `Soldat anlegen ohne Token` ausfuehren und `401` erwarten.
+3. `Soldat anlegen mit Token` ausfuehren und `201` erwarten.
 
 ## Prompts/Requests an KI-Agent/en
 

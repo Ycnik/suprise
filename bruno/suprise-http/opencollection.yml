@@ -11,6 +11,22 @@ request:
       value: "{{baseUrl}}/rest"
     - name: soldatId
       value: "1"
+    - name: keycloakBaseUrl
+      value: https://localhost:8843
+    - name: realm
+      value: javascript
+    - name: oidcIssuerUrl
+      value: "{{keycloakBaseUrl}}/realms/{{realm}}"
+    - name: oidcTokenUrl
+      value: "{{oidcIssuerUrl}}/protocol/openid-connect/token"
+    - name: clientId
+      value: javascript-client
+    - name: username
+      value: admin
+    - name: password
+      value: p
+    - name: idToken
+      value: ""
 
 bundled: false
 extensions:

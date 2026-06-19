@@ -1,0 +1,51 @@
+info:
+  name: Soldat anlegen mit Token
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{restUrl}}"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "vorname": "Mikasa",
+        "nachname": "Ackermann",
+        "geburtsdatum": "2000-02-10",
+        "geschlecht": "WEIBLICH",
+        "rang": "ELITE_SOLDAT",
+        "username": "mikasa",
+        "ausruestung": {
+          "waffe": "Klinge",
+          "seriennummer": "AOT-54321XYZ"
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{idToken}}"
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "201"
+    - expression: res.headers['content-type']
+      operator: matches
+      value: ^application\/json
+    - expression: res.body.id
+      operator: isDefined
+    - expression: res.body.username
+      operator: eq
+      value: mikasa
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

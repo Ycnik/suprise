@@ -1,0 +1,49 @@
+info:
+  name: Keycloak Token admin
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{oidcTokenUrl}}"
+  headers:
+    - name: Content-Type
+      value: application/x-www-form-urlencoded
+    - name: Accept
+      value: application/json
+  body:
+    type: form-urlencoded
+    data:
+      - name: grant_type
+        value: password
+      - name: username
+        value: "{{username}}"
+      - name: password
+        value: "{{password}}"
+      - name: client_id
+        value: "{{clientId}}"
+      - name: scope
+        value: openid
+  auth: none
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+    - expression: res.headers['content-type']
+      operator: matches
+      value: ^application\/json
+    - expression: res.body.id_token
+      operator: matches
+      value: .+\..+\..+
+  scripts:
+    - type: post-response
+      code: |-
+        bru.setVar('idToken', res.body.id_token);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
