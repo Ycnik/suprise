@@ -3,18 +3,18 @@ package model
 import "time"
 
 type Soldat struct {
-	ID           int           `json:"id" gorm:"primaryKey;column:id"`
-	Version      int           `json:"version" gorm:"column:version"`
-	Vorname      string        `json:"vorname" gorm:"column:vorname"`
-	Nachname     string        `json:"nachname" gorm:"column:nachname"`
-	Geburtsdatum *time.Time    `json:"geburtsdatum,omitempty" gorm:"column:geburtsdatum;type:date"`
-	Geschlecht   *string       `json:"geschlecht,omitempty" gorm:"column:geschlecht;type:geschlecht"`
-	Rang         *string       `json:"rang,omitempty" gorm:"column:rang;type:rang"`
-	Username     string        `json:"username" gorm:"column:username"`
-	Erzeugt      time.Time     `json:"erzeugt" gorm:"column:erzeugt"`
-	Aktualisiert  time.Time     `json:"aktualisiert" gorm:"column:aktualisiert"`
-	Ausruestung  *Ausruestung  `json:"ausruestung,omitempty" gorm:"foreignKey:SoldatID"`
-	Verletzungen []Verletzung  `json:"verletzungen,omitempty" gorm:"foreignKey:SoldatID"`
+	ID           int          `json:"id" gorm:"primaryKey;column:id"`
+	Version      int          `json:"version" gorm:"column:version"`
+	Vorname      string       `json:"vorname" gorm:"column:vorname"`
+	Nachname     string       `json:"nachname" gorm:"column:nachname"`
+	Geburtsdatum *time.Time   `json:"geburtsdatum,omitempty" gorm:"column:geburtsdatum;type:date"`
+	Geschlecht   *string      `json:"geschlecht,omitempty" gorm:"column:geschlecht;type:geschlecht"`
+	Rang         *string      `json:"rang,omitempty" gorm:"column:rang;type:rang"`
+	Username     string       `json:"username" gorm:"column:username"`
+	Erzeugt      time.Time    `json:"erzeugt" gorm:"column:erzeugt"`
+	Aktualisiert time.Time    `json:"aktualisiert" gorm:"column:aktualisiert"`
+	Ausruestung  *Ausruestung `json:"ausruestung,omitempty" gorm:"foreignKey:SoldatID"`
+	Verletzungen []Verletzung `json:"verletzungen,omitempty" gorm:"foreignKey:SoldatID"`
 }
 
 func (Soldat) TableName() string {
@@ -33,7 +33,7 @@ func (Ausruestung) TableName() string {
 }
 
 type Verletzung struct {
-	ID                      int       `json:"id" gorm:"primaryKey;column:id"`
+	ID                     int       `json:"id" gorm:"primaryKey;column:id"`
 	Verletzungsbezeichnung string    `json:"verletzungsbezeichnung" gorm:"column:verletzungsbezeichnung"`
 	Behandelt              bool      `json:"behandelt" gorm:"column:behandelt"`
 	Schweregrad            string    `json:"schweregrad" gorm:"column:schweregrad;type:schweregrad"`
