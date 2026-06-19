@@ -31,12 +31,12 @@ type errorResponse struct {
 }
 
 type createSoldatRequest struct {
-	Vorname      string     `json:"vorname" validate:"required,min=2"`
-	Nachname     string     `json:"nachname" validate:"required,min=2"`
-	Geburtsdatum *time.Time `json:"geburtsdatum,omitempty"`
-	Geschlecht   *string    `json:"geschlecht,omitempty"`
-	Rang         *string    `json:"rang,omitempty"`
-	Username     string     `json:"username" validate:"required,min=3"`
+	Vorname      string  `json:"vorname" validate:"required,min=2"`
+	Nachname     string  `json:"nachname" validate:"required,min=2"`
+	Geburtsdatum string  `json:"geburtsdatum,omitempty"`
+	Geschlecht   *string `json:"geschlecht,omitempty"`
+	Rang         *string `json:"rang,omitempty"`
+	Username     string  `json:"username" validate:"required,min=3"`
 	Ausruestung  *struct {
 		Waffe        string `json:"waffe" validate:"required"`
 		Seriennummer string `json:"seriennummer" validate:"required"`
@@ -88,10 +88,20 @@ func (h *SoldatHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var geburtsdatum *time.Time
+	if req.Geburtsdatum != "" {
+		parsed, err := time.Parse("2006-01-02", req.Geburtsdatum)
+		if err != nil {
+			writeError(w, http.StatusBadRequest, "ungueltiges geburtsdatum")
+			return
+		}
+		geburtsdatum = &parsed
+	}
+
 	soldat := model.Soldat{
 		Vorname:      req.Vorname,
 		Nachname:     req.Nachname,
-		Geburtsdatum: req.Geburtsdatum,
+		Geburtsdatum: geburtsdatum,
 		Geschlecht:   req.Geschlecht,
 		Rang:         req.Rang,
 		Username:     req.Username,
