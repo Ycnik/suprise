@@ -15,26 +15,22 @@ http:
     type: json
     data: |-
       {
-        "vorname": "Eren",
-        "nachname": "Jaeger",
-        "geburtsdatum": "2000-01-01",
+        "vorname": "Jean",
+        "nachname": "Kirstein",
+        "geburtsdatum": "2000-04-07",
         "geschlecht": "MAENNLICH",
         "rang": "SOLDAT",
-        "username": "{{soldatUsername}}",
+        "username": "jean-test-006",
         "ausruestung": {
-          "waffe": "ODM_GEAR",
-          "seriennummer": "{{soldatSeriennummer}}"
+          "waffe": "Klinge",
+          "seriennummer": "AOT-TEST-006"
         }
       }
-  auth: none
+  auth:
+    type: bearer
+    token: "{{bearerToken}}"
 
 runtime:
-  scripts:
-    - type: pre-request
-      code: |-
-        const suffix = Date.now().toString();
-        bru.setVar('soldatUsername', 'eren-' + suffix);
-        bru.setVar('soldatSeriennummer', 'AOT-' + suffix);
   assertions:
     - expression: res.status
       operator: eq
@@ -45,11 +41,11 @@ runtime:
     - expression: res.body.id
       operator: isDefined
     - expression: res.body.username
-      operator: matches
-      value: ^eren-
+      operator: eq
+      value: jean-test-006
     - expression: res.body.ausruestung.waffe
       operator: eq
-      value: ODM_GEAR
+      value: Klinge
 
 settings:
   encodeUrl: true
