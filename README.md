@@ -89,16 +89,16 @@ Optionale Keycloak-Konfiguration:
 
 ```bash
 export AUTH_ENABLED="true"
-export OIDC_ISSUER_URL="http://localhost:8843/realms/soldat"
-export OIDC_CLIENT_ID="soldat-client"
+export OIDC_ISSUER_URL="http://localhost:8880/realms/javascript"
+export OIDC_CLIENT_ID="javascript-client"
 ```
 
 PowerShell:
 
 ```powershell
 $env:AUTH_ENABLED="true"
-$env:OIDC_ISSUER_URL="http://localhost:8843/realms/soldat"
-$env:OIDC_CLIENT_ID="soldat-client"
+$env:OIDC_ISSUER_URL="http://localhost:8880/realms/javascript"
+$env:OIDC_CLIENT_ID="javascript-client"
 ```
 
 Start des Servers:
